@@ -1,0 +1,1657 @@
+﻿<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đồng Hồ Đa Năng</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --secondary: #ec4899;
+            --bg-dark: #0f172a;
+            --bg-card: #1e293b;
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --border: rgba(255, 255, 255, 0.1);
+            --glow: rgba(99, 102, 241, 0.3);
+            --bg-gradient-start: rgba(99, 102, 241, 0.15);
+            --bg-gradient-end: rgba(236, 72, 153, 0.15);
+        }
+
+        /* Theme Variables */
+        .theme-morning {
+            --primary: #10b981;
+            --primary-dark: #059669;
+            --secondary: #06b6d4;
+            --bg-dark: #f0fdf4;
+            --bg-card: #dcfce7;
+            --text-primary: #14532d;
+            --text-secondary: #374151;
+            --border: rgba(16, 185, 129, 0.2);
+            --glow: rgba(16, 185, 129, 0.3);
+            --bg-gradient-start: rgba(16, 185, 129, 0.1);
+            --bg-gradient-end: rgba(6, 182, 212, 0.1);
+        }
+
+        .theme-afternoon {
+            --primary: #f59e0b;
+            --primary-dark: #d97706;
+            --secondary: #8b5cf6;
+            --bg-dark: #fef3c7;
+            --bg-card: #fde68a;
+            --text-primary: #92400e;
+            --text-secondary: #78350f;
+            --border: rgba(245, 158, 11, 0.2);
+            --glow: rgba(245, 158, 11, 0.3);
+            --bg-gradient-start: rgba(245, 158, 11, 0.1);
+            --bg-gradient-end: rgba(139, 92, 246, 0.1);
+        }
+
+        .theme-evening {
+            --primary: #ec4899;
+            --primary-dark: #db2777;
+            --secondary: #06b6d4;
+            --bg-dark: #1e1b4b;
+            --bg-card: #312e81;
+            --text-primary: #f9fafb;
+            --text-secondary: #d1d5db;
+            --border: rgba(236, 72, 153, 0.3);
+            --glow: rgba(236, 72, 153, 0.5);
+            --bg-gradient-start: rgba(236, 72, 153, 0.2);
+            --bg-gradient-end: rgba(6, 182, 212, 0.2);
+        }
+
+        .theme-night {
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --secondary: #ec4899;
+            --bg-dark: #0f172a;
+            --bg-card: #1e293b;
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --border: rgba(255, 255, 255, 0.1);
+            --glow: rgba(99, 102, 241, 0.3);
+            --bg-gradient-start: rgba(99, 102, 241, 0.15);
+            --bg-gradient-end: rgba(236, 72, 153, 0.15);
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Animated background */
+        .bg-animation {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -3;
+            overflow: hidden;
+        }
+
+        .bg-animation::before {
+            content: '';
+            position: absolute;
+            width: 200%;
+            height: 200%;
+            top: -50%;
+            left: -50%;
+            background: radial-gradient(circle at 20% 80%, var(--bg-gradient-start) 0%, transparent 50%),
+                        radial-gradient(circle at 80% 20%, var(--bg-gradient-end) 0%, transparent 50%);
+            animation: bgMove 20s ease-in-out infinite;
+        }
+
+        @keyframes bgMove {
+            0%, 100% { transform: translate(0, 0) rotate(0deg); }
+            33% { transform: translate(30px, -30px) rotate(5deg); }
+            66% { transform: translate(-20px, 20px) rotate(-5deg); }
+        }
+
+        .sakura-layer {
+            position: fixed;
+            inset: 0;
+            z-index: -2;
+            pointer-events: none;
+            overflow: hidden;
+        }
+
+        .sakura-container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        .sakura-petal {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 18px;
+            height: 26px;
+            background: radial-gradient(circle at 40% 30%, rgba(255, 255, 255, 0.95), rgba(249, 168, 212, 0.95) 45%, rgba(251, 207, 232, 0.8) 100%);
+            border-radius: 55% 45% 60% 40% / 45% 55% 40% 60%;
+            transform-origin: center;
+            box-shadow: 0 2px 10px rgba(249, 168, 212, 0.22);
+            opacity: 0.75;
+            will-change: transform, opacity;
+        }
+
+        .weather-layer {
+            position: fixed;
+            inset: 0;
+            z-index: -1;
+            pointer-events: none;
+            overflow: hidden;
+        }
+
+        #weather-canvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        .weather-controls {
+            position: fixed;
+            top: 18px;
+            right: 18px;
+            z-index: 2;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+            pointer-events: auto;
+        }
+
+        .weather-btn {
+            border: 1px solid rgba(255, 255, 255, 0.17);
+            background: rgba(15, 23, 42, 0.8);
+            color: var(--text-primary);
+            padding: 10px 16px;
+            border-radius: 999px;
+            cursor: pointer;
+            font-size: 0.95rem;
+            font-weight: 600;
+            transition: transform 0.2s ease, background 0.2s ease, border-color 0.2s ease;
+            backdrop-filter: blur(16px);
+        }
+
+        .weather-btn:hover {
+            transform: translateY(-1px);
+        }
+
+        .weather-btn.active {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            border-color: var(--primary);
+            color: #ffffff;
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.18);
+        }
+
+        .stars {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            display: none;
+            z-index: -2;
+        }
+
+        .theme-night .stars {
+            display: block;
+        }
+
+        .star {
+            position: absolute;
+            background: white;
+            border-radius: 50%;
+            animation: twinkle 2s infinite;
+        }
+
+        @keyframes twinkle {
+            0%, 100% { opacity: 0; transform: scale(0.5); }
+            50% { opacity: 1; transform: scale(1); }
+        }
+
+        .weather-layer {
+            position: fixed;
+            inset: 0;
+            z-index: -1;
+            pointer-events: none;
+            overflow: hidden;
+        }
+
+        #weather-canvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        .weather-controls {
+            position: fixed;
+            top: 18px;
+            right: 18px;
+            z-index: 2;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+            pointer-events: auto;
+        }
+
+        .weather-btn {
+            border: 1px solid rgba(255, 255, 255, 0.17);
+            background: rgba(15, 23, 42, 0.8);
+            color: var(--text-primary);
+            padding: 10px 16px;
+            border-radius: 999px;
+            cursor: pointer;
+            font-size: 0.95rem;
+            font-weight: 600;
+            transition: transform 0.2s ease, background 0.2s ease, border-color 0.2s ease;
+            backdrop-filter: blur(16px);
+        }
+
+        .weather-btn:hover {
+            transform: translateY(-1px);
+        }
+
+        .weather-btn.active {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            border-color: var(--primary);
+            color: #ffffff;
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.18);
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* Header */
+        header {
+            text-align: center;
+            padding: 30px 0;
+        }
+
+        header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 10px;
+        }
+
+        header p {
+            color: var(--text-secondary);
+            font-size: 1rem;
+        }
+
+        /* Navigation Tabs */
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .tab-btn {
+            padding: 12px 28px;
+            border: 2px solid var(--border);
+            background: var(--bg-card);
+            color: var(--text-secondary);
+            border-radius: 16px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .tab-btn:hover {
+            border-color: var(--primary);
+            color: var(--text-primary);
+            transform: translateY(-2px);
+        }
+
+        .tab-btn.active {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            border-color: var(--primary);
+            color: white;
+            box-shadow: 0 8px 25px var(--glow);
+        }
+
+        /* Content Sections */
+        .section {
+            display: none;
+            animation: fadeIn 0.4s ease;
+        }
+
+        .section.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Clock Display */
+        .clock-section {
+            text-align: center;
+        }
+
+        .clock-display {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            padding: 50px 40px;
+            margin: 20px 0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .clock-display::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle at center, var(--glow) 0%, transparent 70%);
+            opacity: 0.5;
+        }
+
+        .time-main {
+            font-size: 6rem;
+            font-weight: 700;
+            letter-spacing: 4px;
+            position: relative;
+            z-index: 1;
+            text-shadow: 0 0 40px var(--glow);
+        }
+
+        .time-seconds {
+            font-size: 3rem;
+            color: var(--secondary);
+            position: relative;
+            z-index: 1;
+        }
+
+        .date-display {
+            font-size: 1.3rem;
+            color: var(--text-secondary);
+            margin-top: 15px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .timezone-selector {
+            margin-top: 20px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .timezone-selector select {
+            padding: 10px 20px;
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            font-size: 1rem;
+            cursor: pointer;
+            outline: none;
+        }
+
+        .timezone-selector select:focus {
+            border-color: var(--primary);
+        }
+
+        /* Stopwatch */
+        .stopwatch-section {
+            text-align: center;
+        }
+
+        .stopwatch-display {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            padding: 50px 40px;
+            margin: 20px 0;
+        }
+
+        .stopwatch-time {
+            font-size: 5rem;
+            font-weight: 700;
+            font-variant-numeric: tabular-nums;
+            letter-spacing: 2px;
+        }
+
+        .stopwatch-ms {
+            font-size: 2.5rem;
+            color: var(--secondary);
+        }
+
+        .stopwatch-controls {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin: 25px 0;
+            flex-wrap: wrap;
+        }
+
+        .ctrl-btn {
+            padding: 14px 32px;
+            border: none;
+            border-radius: 16px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .ctrl-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .ctrl-btn:active {
+            transform: translateY(-1px);
+        }
+
+        .btn-start {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+        }
+
+        .btn-pause {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            color: white;
+        }
+
+        .btn-reset {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            color: white;
+        }
+
+        .btn-lap {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+        }
+
+        .laps-container {
+            margin-top: 20px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .laps-container::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .laps-container::-webkit-scrollbar-track {
+            background: var(--bg-dark);
+        }
+
+        .laps-container::-webkit-scrollbar-thumb {
+            background: var(--primary);
+            border-radius: 3px;
+        }
+
+        .lap-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 20px;
+            background: var(--bg-dark);
+            border-radius: 12px;
+            margin-bottom: 8px;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(-20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        .lap-number {
+            color: var(--text-secondary);
+            font-weight: 600;
+        }
+
+        .lap-time {
+            font-weight: 700;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .lap-diff {
+            color: var(--secondary);
+            font-size: 0.9rem;
+        }
+
+        /* Timer */
+        .timer-section {
+            text-align: center;
+        }
+
+        .timer-setup {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            padding: 40px;
+            margin: 20px 0;
+        }
+
+        .timer-input-group {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            margin: 20px 0;
+        }
+
+        .timer-input-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .timer-input-wrapper label {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+        }
+
+        .timer-input {
+            width: 100px;
+            padding: 15px;
+            border: 2px solid var(--border);
+            border-radius: 16px;
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            font-size: 2.5rem;
+            font-weight: 700;
+            text-align: center;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        .timer-input:focus {
+            border-color: var(--primary);
+        }
+
+        .timer-separator {
+            font-size: 3rem;
+            font-weight: 700;
+            color: var(--text-secondary);
+            padding-bottom: 20px;
+        }
+
+        .timer-presets {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin: 20px 0;
+        }
+
+        .preset-btn {
+            padding: 8px 20px;
+            border: 2px solid var(--border);
+            background: var(--bg-dark);
+            color: var(--text-secondary);
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.3s;
+        }
+
+        .preset-btn:hover {
+            border-color: var(--primary);
+            color: var(--text-primary);
+            background: rgba(99, 102, 241, 0.1);
+        }
+
+        .timer-display {
+            display: none;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            padding: 50px 40px;
+            margin: 20px 0;
+        }
+
+        .timer-display.active {
+            display: block;
+        }
+
+        .timer-countdown {
+            font-size: 6rem;
+            font-weight: 700;
+            font-variant-numeric: tabular-nums;
+            letter-spacing: 4px;
+        }
+
+        .timer-countdown.warning {
+            animation: pulse 1s ease-in-out infinite;
+            color: #f59e0b;
+        }
+
+        .timer-countdown.danger {
+            animation: pulse 0.5s ease-in-out infinite;
+            color: #ef4444;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.7; transform: scale(1.05); }
+        }
+
+        .timer-progress {
+            width: 100%;
+            height: 8px;
+            background: var(--bg-dark);
+            border-radius: 4px;
+            margin: 20px 0;
+            overflow: hidden;
+        }
+
+        .timer-progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            border-radius: 4px;
+            transition: width 1s linear;
+        }
+
+        .timer-controls {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin: 25px 0;
+            flex-wrap: wrap;
+        }
+
+        .timer-status {
+            font-size: 1.1rem;
+            color: var(--text-secondary);
+            margin-top: 10px;
+        }
+
+        /* Alarm Modal */
+        .alarm-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .alarm-overlay.active {
+            display: flex;
+        }
+
+        .alarm-modal {
+            background: var(--bg-card);
+            border-radius: 24px;
+            padding: 50px;
+            text-align: center;
+            animation: alarmShake 0.5s ease-in-out infinite;
+            max-width: 400px;
+        }
+
+        @keyframes alarmShake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+
+        .alarm-icon {
+            font-size: 5rem;
+            color: var(--secondary);
+            margin-bottom: 20px;
+            animation: ring 1s ease-in-out infinite;
+        }
+
+        @keyframes ring {
+            0%, 100% { transform: rotate(0); }
+            25% { transform: rotate(15deg); }
+            75% { transform: rotate(-15deg); }
+        }
+
+        .alarm-text {
+            font-size: 1.5rem;
+            margin-bottom: 30px;
+        }
+
+        .btn-dismiss {
+            padding: 15px 40px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            border: none;
+            border-radius: 16px;
+            font-size: 1.2rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-dismiss:hover {
+            transform: scale(1.05);
+            box-shadow: 0 10px 30px var(--glow);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .time-main {
+                font-size: 3.5rem;
+            }
+
+            .time-seconds {
+                font-size: 2rem;
+            }
+
+            .stopwatch-time {
+                font-size: 3rem;
+            }
+
+            .stopwatch-ms {
+                font-size: 1.5rem;
+            }
+
+            .timer-countdown {
+                font-size: 3.5rem;
+            }
+
+            .timer-input {
+                width: 70px;
+                padding: 10px;
+                font-size: 2rem;
+            }
+
+            .ctrl-btn {
+                padding: 12px 20px;
+                font-size: 0.95rem;
+            }
+
+            header h1 {
+                font-size: 1.8rem;
+            }
+
+            .tabs {
+                gap: 8px;
+            }
+
+            .tab-btn {
+                padding: 10px 18px;
+                font-size: 0.9rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .time-main {
+                font-size: 2.5rem;
+            }
+
+            .timer-input-group {
+                flex-direction: column;
+                gap: 5px;
+            }
+
+            .timer-separator {
+                padding: 5px;
+            }
+        }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            padding: 30px;
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-animation"></div>
+    <div class="sakura-layer">
+        <div class="sakura-container" id="sakura-container"></div>
+    </div>
+    <div class="weather-layer">
+        <canvas id="weather-canvas"></canvas>
+    </div>
+    <div class="weather-controls" id="weather-controls">
+        <button class="weather-btn active" data-weather="none" type="button" onclick="setWeather('none')">Tắt</button>
+        <button class="weather-btn" data-weather="rain" type="button" onclick="setWeather('rain')">🌧️ Mưa</button>
+        <button class="weather-btn" data-weather="snow" type="button" onclick="setWeather('snow')">❄️ Tuyết</button>
+        <button class="weather-btn" id="sakura-toggle" type="button" onclick="toggleSakura()">🌸 Sakura</button>
+    </div>
+    <div class="stars" id="stars"></div>
+
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-clock"></i> Đồng Hồ Đa Năng</h1>
+            <p>Xem giờ • Bấm giờ • Hẹn giờ</p>
+        </header>
+
+        <!-- Navigation Tabs -->
+        <nav class="tabs">
+            <button class="tab-btn active" data-tab="clock">
+                <i class="fas fa-clock"></i> Đồng hồ
+            </button>
+            <button class="tab-btn" data-tab="stopwatch">
+                <i class="fas fa-stopwatch"></i> Bấm giờ
+            </button>
+            <button class="tab-btn" data-tab="timer">
+                <i class="fas fa-hourglass-half"></i> Hẹn giờ
+            </button>
+        </nav>
+
+        <!-- Clock Section -->
+        <section id="clock" class="section active clock-section">
+            <div class="clock-display">
+                <div class="time-main" id="time-main">00:00</div>
+                <div class="time-seconds" id="time-seconds">:00</div>
+                <div class="date-display" id="date-display">Thứ Hai, 1 tháng 1 năm 2024</div>
+                <div class="timezone-selector">
+                    <select id="timezone-select">
+                        
+                        <option value="Asia/Ho_Chi_Minh">🇻🇳 Việt Nam (UTC+7)</option>
+                        <option value="Asia/Bangkok">🇹🇭 Bangkok (UTC+7)</option>
+                        <option value="Asia/Singapore">🇸🇬 Singapore (UTC+8)</option>
+                        <option value="Asia/Tokyo">🇯🇵 Tokyo (UTC+9)</option>
+                        <option value="Asia/Seoul">🇰🇷 Seoul (UTC+9)</option>
+                        <option value="Asia/Shanghai">🇨🇳 Bắc Kinh (UTC+8)</option>
+                        <option value="Asia/Hong_Kong">🇭🇰 Hong Kong (UTC+8)</option>
+                        <option value="Asia/Kolkata">🇮🇳 Ấn Độ (UTC+5:30)</option>
+                        <option value="Asia/Dubai">🇦🇪 Dubai (UTC+4)</option>
+                        <option value="Europe/London">🇬🇧 London (UTC+0/1)</option>
+                        <option value="Europe/Paris">🇫🇷 Paris (UTC+1/2)</option>
+                        <option value="Europe/Berlin">🇩🇪 Berlin (UTC+1/2)</option>
+                        <option value="America/New_York">🇺🇸 New York (UTC-5/-4)</option>
+                        <option value="America/Chicago">🇺🇸 Chicago (UTC-6/-5)</option>
+                        <option value="America/Denver">🇺🇸 Denver (UTC-7/-6)</option>
+                        <option value="America/Los_Angeles">🇺🇸 Los Angeles (UTC-8/-7)</option>
+                        <option value="Pacific/Auckland">🇳🇿 Auckland (UTC+12/13)</option>
+                        <option value="Australia/Sydney">🇦🇺 Sydney (UTC+10/11)</option>
+                    </select>
+                </div>
+            </div>
+        </section>
+
+        <!-- Stopwatch Section -->
+        <section id="stopwatch" class="section stopwatch-section">
+            <div class="stopwatch-display">
+                <div class="stopwatch-time" id="stopwatch-time">00:00:00</div>
+                <div class="stopwatch-ms" id="stopwatch-ms">.000</div>
+            </div>
+
+            <div class="stopwatch-controls">
+                <button class="ctrl-btn btn-start" id="sw-start" onclick="startStopwatch()">
+                    <i class="fas fa-play"></i> Bắt đầu
+                </button>
+                <button class="ctrl-btn btn-pause" id="sw-pause" onclick="pauseStopwatch()" style="display:none;">
+                    <i class="fas fa-pause"></i> Tạm dừng
+                </button>
+                <button class="ctrl-btn btn-lap" id="sw-lap" onclick="recordLap()" style="display:none;">
+                    <i class="fas fa-flag"></i> Vòng
+                </button>
+                <button class="ctrl-btn btn-reset" onclick="resetStopwatch()">
+                    <i class="fas fa-redo"></i> Reset
+                </button>
+            </div>
+
+            <div class="laps-container" id="laps-container"></div>
+        </section>
+
+        <!-- Timer Section -->
+        <section id="timer" class="section timer-section">
+            <!-- Setup View -->
+            <div class="timer-setup" id="timer-setup">
+                <h2 style="margin-bottom: 20px; color: var(--text-secondary);">Đặt thời gian hẹn giờ</h2>
+                
+                <div class="timer-input-group">
+                    <div class="timer-input-wrapper">
+                        <label>Giờ</label>
+                        <input type="number" class="timer-input" id="timer-hours" min="0" max="99" value="0">
+                    </div>
+                    <div class="timer-separator">:</div>
+                    <div class="timer-input-wrapper">
+                        <label>Phút</label>
+                        <input type="number" class="timer-input" id="timer-minutes" min="0" max="59" value="5">
+                    </div>
+                    <div class="timer-separator">:</div>
+                    <div class="timer-input-wrapper">
+                        <label>Giây</label>
+                        <input type="number" class="timer-input" id="timer-seconds" min="0" max="59" value="0">
+                    </div>
+                </div>
+
+                <div class="timer-presets">
+                    <button class="preset-btn" onclick="setPreset(0,1,0)">1 phút</button>
+                    <button class="preset-btn" onclick="setPreset(0,5,0)">5 phút</button>
+                    <button class="preset-btn" onclick="setPreset(0,10,0)">10 phút</button>
+                    <button class="preset-btn" onclick="setPreset(0,15,0)">15 phút</button>
+                    <button class="preset-btn" onclick="setPreset(0,25,0)">25 phút (Pomodoro)</button>
+                    <button class="preset-btn" onclick="setPreset(0,30,0)">30 phút</button>
+                    <button class="preset-btn" onclick="setPreset(1,0,0)">1 giờ</button>
+                </div>
+
+                <div class="stopwatch-controls">
+                    <button class="ctrl-btn btn-start" onclick="startTimer()">
+                        <i class="fas fa-play"></i> Bắt đầu
+                    </button>
+                </div>
+            </div>
+
+            <!-- Countdown View -->
+            <div class="timer-display" id="timer-display">
+                <div class="timer-countdown" id="timer-countdown">00:00:00</div>
+                <div class="timer-progress">
+                    <div class="timer-progress-bar" id="timer-progress-bar" style="width: 100%"></div>
+                </div>
+                <div class="timer-status" id="timer-status">Đang đếm ngược...</div>
+
+                <div class="timer-controls">
+                    <button class="ctrl-btn btn-pause" id="timer-pause-btn" onclick="pauseTimer()">
+                        <i class="fas fa-pause"></i> Tạm dừng
+                    </button>
+                    <button class="ctrl-btn btn-reset" onclick="resetTimer()">
+                        <i class="fas fa-redo"></i> Hủy
+                    </button>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Alarm Overlay -->
+    <div class="alarm-overlay" id="alarm-overlay">
+        <div class="alarm-modal">
+            <div class="alarm-icon">
+                <i class="fas fa-bell"></i>
+            </div>
+            <div class="alarm-text" id="alarm-text">Hết thời gian!</div>
+            <button class="btn-dismiss" onclick="dismissAlarm()">
+                <i class="fas fa-check"></i> Tắt chuông
+            </button>
+        </div>
+    </div>
+
+    <footer>
+        <p>Đồng Hồ Đa Năng © 2026 • Được xây dựng với ❤️</p>
+    </footer>
+
+    <script>
+        // ==================== TAB NAVIGATION ====================
+        const tabBtns = document.querySelectorAll('.tab-btn');
+        const sections = document.querySelectorAll('.section');
+
+        tabBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                tabBtns.forEach(b => b.classList.remove('active'));
+                sections.forEach(s => s.classList.remove('active'));
+                
+                btn.classList.add('active');
+                document.getElementById(btn.dataset.tab).classList.add('active');
+            });
+        });
+
+        // ==================== CLOCK ====================
+        function updateClock() {
+            const timezone = document.getElementById('timezone-select').value;
+            const now = new Date();
+            
+            // Get time in selected timezone
+            const options = { 
+                timeZone: timezone,
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit',
+                hour12: false
+            };
+            
+            const timeString = now.toLocaleString('en-US', options);
+            const parts = timeString.split(':');
+            const hours = parts[0];
+            const minutes = parts[1];
+            const seconds = parts[2];
+            
+            document.getElementById('time-main').textContent = `${hours}:${minutes}`;
+            document.getElementById('time-seconds').textContent = `${seconds} s`;
+            
+            // Date display
+            const dateOptions = {
+                timeZone: timezone,
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            };
+            const dateString = now.toLocaleDateString('vi-VN', dateOptions);
+            document.getElementById('date-display').textContent = dateString.charAt(0).toUpperCase() + dateString.slice(1);
+        }
+
+        setInterval(updateClock, 1000);
+        updateClock();
+
+        // ==================== STOPWATCH ====================
+        let stopwatchInterval = null;
+        let stopwatchStartTime = 0;
+        let stopwatchElapsed = 0;
+        let stopwatchRunning = false;
+        let laps = [];
+
+        function formatStopwatchTime(ms) {
+            const totalSeconds = Math.floor(ms / 1000);
+            const hours = Math.floor(totalSeconds / 3600);
+            const minutes = Math.floor((totalSeconds % 3600) / 60);
+            const seconds = totalSeconds % 60;
+            const milliseconds = ms % 1000;
+
+            return {
+                time: `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`,
+                ms: `.${String(milliseconds).padStart(3, '0')}`
+            };
+        }
+
+        function updateStopwatchDisplay() {
+            if (stopwatchRunning) {
+                const now = Date.now();
+                const elapsed = stopwatchElapsed + (now - stopwatchStartTime);
+                const formatted = formatStopwatchTime(elapsed);
+                document.getElementById('stopwatch-time').textContent = formatted.time;
+                document.getElementById('stopwatch-ms').textContent = formatted.ms;
+            }
+        }
+
+        function startStopwatch() {
+            if (!stopwatchRunning) {
+                stopwatchStartTime = Date.now();
+                stopwatchRunning = true;
+                
+                document.getElementById('sw-start').style.display = 'none';
+                document.getElementById('sw-pause').style.display = 'inline-flex';
+                document.getElementById('sw-lap').style.display = 'inline-flex';
+                
+                stopwatchInterval = setInterval(updateStopwatchDisplay, 10);
+            }
+        }
+
+        function pauseStopwatch() {
+            if (stopwatchRunning) {
+                stopwatchElapsed += Date.now() - stopwatchStartTime;
+                stopwatchRunning = false;
+                clearInterval(stopwatchInterval);
+                
+                document.getElementById('sw-start').style.display = 'inline-flex';
+                document.getElementById('sw-pause').style.display = 'none';
+                document.getElementById('sw-start').innerHTML = '<i class="fas fa-play"></i> Tiếp tục';
+            }
+        }
+
+        function resetStopwatch() {
+            clearInterval(stopwatchInterval);
+            stopwatchRunning = false;
+            stopwatchElapsed = 0;
+            laps = [];
+            
+            document.getElementById('stopwatch-time').textContent = '00:00:00';
+            document.getElementById('stopwatch-ms').textContent = '.000';
+            document.getElementById('sw-start').style.display = 'inline-flex';
+            document.getElementById('sw-pause').style.display = 'none';
+            document.getElementById('sw-lap').style.display = 'none';
+            document.getElementById('sw-start').innerHTML = '<i class="fas fa-play"></i> Bắt đầu';
+            document.getElementById('laps-container').innerHTML = '';
+        }
+
+        function recordLap() {
+            if (stopwatchRunning) {
+                const now = Date.now();
+                const elapsed = stopwatchElapsed + (now - stopwatchStartTime);
+                const formatted = formatStopwatchTime(elapsed);
+                
+                let diff = '';
+                if (laps.length > 0) {
+                    const prevLap = laps[laps.length - 1];
+                    const diffMs = elapsed - prevLap.total;
+                    const diffFormatted = formatStopwatchTime(diffMs);
+                    diff = `<span class="lap-diff">+${diffFormatted.time}${diffFormatted.ms}</span>`;
+                }
+                
+                laps.push({
+                    number: laps.length + 1,
+                    time: `${formatted.time}${formatted.ms}`,
+                    total: elapsed
+                });
+                
+                const lapsContainer = document.getElementById('laps-container');
+                const lapItem = document.createElement('div');
+                lapItem.className = 'lap-item';
+                lapItem.innerHTML = `
+                    <span class="lap-number">Vòng ${laps.length}</span>
+                    <span class="lap-time">${formatted.time}${formatted.ms}</span>
+                    ${diff}
+                `;
+                lapsContainer.insertBefore(lapItem, lapsContainer.firstChild);
+            }
+        }
+
+        // ==================== TIMER ====================
+        let timerInterval = null;
+        let timerTotalSeconds = 0;
+        let timerRemainingSeconds = 0;
+        let timerRunning = false;
+        let timerPaused = false;
+        let alarmAudio = null;
+
+        function setPreset(hours, minutes, seconds) {
+            document.getElementById('timer-hours').value = hours;
+            document.getElementById('timer-minutes').value = minutes;
+            document.getElementById('timer-seconds').value = seconds;
+        }
+
+        function formatTime(totalSeconds) {
+            const hours = Math.floor(totalSeconds / 3600);
+            const minutes = Math.floor((totalSeconds % 3600) / 60);
+            const seconds = totalSeconds % 60;
+            return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+        }
+
+        function startTimer() {
+            const hours = parseInt(document.getElementById('timer-hours').value) || 0;
+            const minutes = parseInt(document.getElementById('timer-minutes').value) || 0;
+            const seconds = parseInt(document.getElementById('timer-seconds').value) || 0;
+            
+            timerTotalSeconds = hours * 3600 + minutes * 60 + seconds;
+            
+            if (timerTotalSeconds <= 0) {
+                alert('Vui lòng đặt thời gian lớn hơn 0!');
+                return;
+            }
+            
+            timerRemainingSeconds = timerTotalSeconds;
+            timerRunning = true;
+            timerPaused = false;
+            
+            document.getElementById('timer-setup').style.display = 'none';
+            document.getElementById('timer-display').classList.add('active');
+            
+            updateTimerDisplay();
+            timerInterval = setInterval(updateTimerCountdown, 1000);
+        }
+
+        function updateTimerDisplay() {
+            document.getElementById('timer-countdown').textContent = formatTime(timerRemainingSeconds);
+            
+            const progress = (timerRemainingSeconds / timerTotalSeconds) * 100;
+            document.getElementById('timer-progress-bar').style.width = `${progress}%`;
+            
+            // Warning states
+            const countdownEl = document.getElementById('timer-countdown');
+            countdownEl.classList.remove('warning', 'danger');
+            
+            if (timerRemainingSeconds <= 10 && timerRemainingSeconds > 0) {
+                countdownEl.classList.add('danger');
+            } else if (timerRemainingSeconds <= 60 && timerRemainingSeconds > 0) {
+                countdownEl.classList.add('warning');
+            }
+        }
+
+        function updateTimerCountdown() {
+            if (!timerPaused && timerRemainingSeconds > 0) {
+                timerRemainingSeconds--;
+                updateTimerDisplay();
+                
+                if (timerRemainingSeconds === 0) {
+                    clearInterval(timerInterval);
+                    triggerAlarm();
+                }
+            }
+        }
+
+        function pauseTimer() {
+            if (timerRunning) {
+                timerPaused = !timerPaused;
+                
+                const btn = document.getElementById('timer-pause-btn');
+                if (timerPaused) {
+                    btn.innerHTML = '<i class="fas fa-play"></i> Tiếp tục';
+                    document.getElementById('timer-status').textContent = 'Đã tạm dừng';
+                } else {
+                    btn.innerHTML = '<i class="fas fa-pause"></i> Tạm dừng';
+                    document.getElementById('timer-status').textContent = 'Đang đếm ngược...';
+                }
+            }
+        }
+
+        function resetTimer() {
+            clearInterval(timerInterval);
+            timerRunning = false;
+            timerPaused = false;
+            timerRemainingSeconds = 0;
+            timerTotalSeconds = 0;
+            
+            document.getElementById('timer-display').classList.remove('active');
+            document.getElementById('timer-setup').style.display = 'block';
+            
+            dismissAlarm();
+        }
+
+        function triggerAlarm() {
+            // Show alarm overlay
+            document.getElementById('alarm-overlay').classList.add('active');
+            
+            // Play alarm sound
+            playAlarmSound();
+            
+            // Vibrate if supported
+            if (navigator.vibrate) {
+                navigator.vibrate([500, 200, 500, 200, 500]);
+            }
+        }
+
+        function playAlarmSound() {
+            // Create alarm sound using Web Audio API
+            let audioContext = null;
+function getAudioContext() {
+    if (!audioContext) {
+        audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    }
+    return audioContext;
+}
+            
+            function playBeep(freq, startTime, duration) {
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+                
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+                
+                oscillator.frequency.value = freq;
+                oscillator.type = 'sine';
+                
+                gainNode.gain.setValueAtTime(0.5, startTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, startTime + duration);
+                
+                oscillator.start(startTime);
+                oscillator.stop(startTime + duration);
+            }
+            
+            // Play a sequence of beeps
+            const now = audioContext.currentTime;
+            for (let i = 0; i < 6; i++) {
+                playBeep(880, now + i * 0.5, 0.3);
+            }
+            
+            // Repeat
+            alarmAudio = setInterval(() => {
+                const now = audioContext.currentTime;
+                for (let i = 0; i < 6; i++) {
+                    playBeep(880, now + i * 0.5, 0.3);
+                }
+            }, 3500);
+        }
+
+        function dismissAlarm() {
+            document.getElementById('alarm-overlay').classList.remove('active');
+            
+            if (alarmAudio) {
+                clearInterval(alarmAudio);
+                alarmAudio = null;
+            }
+            
+            // Stop vibration
+            if (navigator.vibrate) {
+                navigator.vibrate(0);
+            }
+        }
+
+        // ==================== WEATHER LAYER ====================
+        const weatherCanvas = document.getElementById('weather-canvas');
+        const weatherCtx = weatherCanvas.getContext('2d');
+        const weatherControls = document.getElementById('weather-controls');
+        let weatherParticles = [];
+        let weatherAnimationId = null;
+        let currentWeather = 'none';
+        let weatherLastTime = performance.now();
+
+        function resizeWeatherCanvas() {
+            weatherCanvas.width = window.innerWidth;
+            weatherCanvas.height = window.innerHeight;
+        }
+
+        function randomRange(min, max) {
+            return Math.random() * (max - min) + min;
+        }
+
+        function createWeatherParticles(type) {
+            weatherParticles = [];
+
+            if (type === 'rain') {
+                const count = Math.max(140, Math.floor(window.innerWidth / 6));
+                for (let i = 0; i < count; i++) {
+                    weatherParticles.push({
+                        x: Math.random() * weatherCanvas.width,
+                        y: Math.random() * weatherCanvas.height,
+                        len: randomRange(12, 24),
+                        speed: randomRange(900, 1400),
+                        width: randomRange(1, 2),
+                        opacity: randomRange(0.15, 0.45),
+                        wind: randomRange(-0.4, 1.1)
+                    });
+                }
+            } else if (type === 'snow') {
+                const count = Math.max(90, Math.floor(window.innerWidth / 16));
+                for (let i = 0; i < count; i++) {
+                    weatherParticles.push({
+                        x: Math.random() * weatherCanvas.width,
+                        y: Math.random() * weatherCanvas.height,
+                        radius: randomRange(1.4, 3.8),
+                        speed: randomRange(24, 72),
+                        drift: randomRange(-0.4, 0.4),
+                        opacity: randomRange(0.3, 0.9),
+                        angle: Math.random() * Math.PI * 2
+                    });
+                }
+            }
+        }
+
+        function drawWeather(delta) {
+            weatherCtx.clearRect(0, 0, weatherCanvas.width, weatherCanvas.height);
+
+            if (currentWeather === 'rain') {
+                weatherParticles.forEach((particle) => {
+                    particle.x += particle.wind * delta * 300;
+                    particle.y += particle.speed * delta;
+
+                    if (particle.y > weatherCanvas.height) {
+                        particle.y = -particle.len;
+                        particle.x = Math.random() * weatherCanvas.width;
+                    }
+                    if (particle.x > weatherCanvas.width + 20 || particle.x < -20) {
+                        particle.x = Math.random() * weatherCanvas.width;
+                    }
+
+                    weatherCtx.strokeStyle = `rgba(255, 255, 255, ${particle.opacity})`;
+                    weatherCtx.lineWidth = particle.width;
+                    weatherCtx.beginPath();
+                    weatherCtx.moveTo(particle.x, particle.y);
+                    weatherCtx.lineTo(particle.x - particle.wind * 8, particle.y - particle.len);
+                    weatherCtx.stroke();
+                });
+            } else if (currentWeather === 'snow') {
+                weatherParticles.forEach((particle) => {
+                    particle.y += particle.speed * delta;
+                    particle.x += Math.sin(particle.angle) * 0.8 + particle.drift;
+                    particle.angle += 0.01;
+
+                    if (particle.y > weatherCanvas.height) {
+                        particle.y = -particle.radius * 4;
+                        particle.x = Math.random() * weatherCanvas.width;
+                    }
+                    if (particle.x > weatherCanvas.width + 20) {
+                        particle.x = -20;
+                    }
+                    if (particle.x < -20) {
+                        particle.x = weatherCanvas.width + 20;
+                    }
+weatherCtx.save();
+weatherCtx.translate(particle.x, particle.y);
+
+weatherCtx.shadowBlur = 6;
+weatherCtx.shadowColor = "rgba(255,255,255,0.8)";
+
+weatherCtx.fillStyle = `rgba(255, 255, 255, ${particle.opacity})`;
+weatherCtx.font = `${particle.radius * 6}px Arial`;
+weatherCtx.textAlign = "center";
+weatherCtx.textBaseline = "middle";
+
+weatherCtx.fillText("❄", 0, 0);
+weatherCtx.restore();
+                });
+            }
+        }
+
+        function animateWeather(time) {
+            const delta = Math.min((time - weatherLastTime) / 1000, 0.032);
+            weatherLastTime = time;
+
+           if (currentWeather === 'none') {
+    weatherCtx.clearRect(0, 0, weatherCanvas.width, weatherCanvas.height);
+    if (weatherAnimationId) cancelAnimationFrame(weatherAnimationId);
+    weatherAnimationId = null;
+    return;
+}
+
+            drawWeather(delta);
+            weatherAnimationId = requestAnimationFrame(animateWeather);
+        }
+
+        function updateWeatherButtons() {
+            weatherControls.querySelectorAll('.weather-btn').forEach((btn) => {
+                btn.classList.toggle('active', btn.dataset.weather === currentWeather);
+            });
+        }
+
+        function setWeather(type) {
+            if (!['none', 'rain', 'snow'].includes(type)) {
+                return;
+            }
+
+            currentWeather = type;
+            updateWeatherButtons();
+            resizeWeatherCanvas();
+
+            if (weatherAnimationId) {
+                cancelAnimationFrame(weatherAnimationId);
+                weatherAnimationId = null;
+            }
+
+            if (type === 'none') {
+                weatherCtx.clearRect(0, 0, weatherCanvas.width, weatherCanvas.height);
+                return;
+            }
+
+            createWeatherParticles(type);
+            weatherLastTime = performance.now();
+            weatherAnimationId = requestAnimationFrame(animateWeather);
+        }
+
+        window.setWeather = setWeather;
+        window.addEventListener('resize', resizeWeatherCanvas);
+        window.addEventListener('load', () => {
+    setSakuraEffect('on');
+});
+        resizeWeatherCanvas();
+        setWeather('none');
+        document.addEventListener("click", (e) => {
+    if (currentWeather === "snow") {
+        spawnSanta();
+    }
+});
+   
+
+        // ==================== SAKURA EFFECT ====================
+        const sakuraContainer = document.getElementById('sakura-container');
+        const sakuraToggleButton = document.getElementById('sakura-toggle');
+        let sakuraParticles = [];
+        let sakuraAnimationId = null;
+        let sakuraActive = true;
+        const sakuraMaxCount = 72;
+        const sakuraWindSpeed = 20;
+
+        function createSakuraPetal() {
+            const petal = document.createElement('span');
+            petal.className = 'sakura-petal';
+
+            const size = randomRange(14, 28);
+            petal.style.width = `${size}px`;
+            petal.style.height = `${size * 1.4}px`;
+            petal.style.opacity = randomRange(0.6, 0.9).toFixed(2);
+            petal.style.background = `radial-gradient(circle at 40% 30%, rgba(255,255,255,0.95), rgba(249,168,212,0.95) 45%, rgba(251,207,232,0.8) 100%)`;
+
+            const particle = {
+                el: petal,
+                x: randomRange(0, window.innerWidth),
+                y: randomRange(-window.innerHeight * 0.6, 0),
+                speed: randomRange(24, 72),
+                sway: randomRange(12, 40),
+                swaySeed: randomRange(0, Math.PI * 2),
+                rotation: randomRange(0, 360),
+                rotationSpeed: randomRange(-40, 40),
+                scaleX: randomRange(0.85, 1.15),
+                scaleY: randomRange(0.78, 1.1),
+                alpha: parseFloat(petal.style.opacity),
+                drift: randomRange(-0.2, 0.4)
+            };
+
+            particle.el.style.transform = `translate3d(${particle.x}px, ${particle.y}px, 0) rotate(${particle.rotation}deg) scale(${particle.scaleX}, ${particle.scaleY})`;
+            sakuraContainer.appendChild(particle.el);
+            sakuraParticles.push(particle);
+        }
+
+        function updateSakuraParticles(delta) {
+            sakuraParticles.forEach((particle) => {
+                particle.y += particle.speed * delta;
+                particle.x += Math.sin(particle.y / 40 + particle.swaySeed) * particle.drift + particle.drift * sakuraWindSpeed * delta;
+                particle.rotation += particle.rotationSpeed * delta;
+
+                particle.el.style.transform = `translate3d(${particle.x}px, ${particle.y}px, 0) rotate(${particle.rotation}deg) scale(${particle.scaleX}, ${particle.scaleY})`;
+
+                if (particle.y > window.innerHeight + 80 || particle.x < -80 || particle.x > window.innerWidth + 80) {
+                    particle.el.remove();
+                }
+            });
+
+            sakuraParticles = sakuraParticles.filter((particle) => particle.el.isConnected);
+
+            while (sakuraParticles.length < sakuraMaxCount && sakuraActive) {
+                createSakuraPetal();
+            }
+        }
+
+        function animateSakura(time) {
+            if (!sakuraActive) {
+                sakuraAnimationId = null;
+                return;
+            }
+
+            const delta = Math.min((time - (animateSakura.lastTime || time)) / 1000, 0.03);
+            animateSakura.lastTime = time;
+
+            updateSakuraParticles(delta);
+            sakuraAnimationId = requestAnimationFrame(animateSakura);
+        }
+
+        function setSakuraEffect(state) {
+            sakuraActive = state === 'on';
+            sakuraToggleButton.classList.toggle('active', sakuraActive);
+
+            if (!sakuraActive) {
+                sakuraParticles.forEach((particle) => particle.el.remove());
+                sakuraParticles = [];
+                if (sakuraAnimationId) {
+                    cancelAnimationFrame(sakuraAnimationId);
+                    sakuraAnimationId = null;
+                }
+                return;
+            }
+
+            while (sakuraParticles.length < sakuraMaxCount) {
+                createSakuraPetal();
+            }
+
+            if (!sakuraAnimationId) {
+                animateSakura.lastTime = performance.now();
+                sakuraAnimationId = requestAnimationFrame(animateSakura);
+            }
+        }
+
+        function toggleSakura() {
+            setSakuraEffect(sakuraActive ? 'off' : 'on');
+        }
+
+        window.setSakuraEffect = setSakuraEffect;
+
+        // ==================== KEYBOARD SHORTCUTS ====================
+        document.addEventListener('keydown', (e) => {
+            // Spacebar to start/pause stopwatch when on stopwatch tab
+            if (e.code === 'Space' && document.getElementById('stopwatch').classList.contains('active')) {
+                e.preventDefault();
+                if (stopwatchRunning) {
+                    pauseStopwatch();
+                } else if (stopwatchElapsed === 0 || !stopwatchRunning) {
+                    startStopwatch();
+                } else {
+                    startStopwatch();
+                }
+            }
+            
+            // L for lap
+            if (e.code === 'KeyL' && stopwatchRunning && document.getElementById('stopwatch').classList.contains('active')) {
+                recordLap();
+            }
+            
+            // Escape to dismiss alarm
+            if (e.code === 'Escape') {
+                dismissAlarm();
+            }
+        });
+
+        // ==================== INITIALIZATION ====================
+        // Request notification permission for timer
+        if ('Notification' in window && Notification.permission === 'default') {
+            Notification.requestPermission();
+        }
+
+
+        function spawnSanta() {
+    const santa = document.createElement("div");
+    santa.innerHTML = "🎅🦌🦌🦌";
+    
+    santa.style.position = "fixed";
+    santa.style.left = "-200px";
+    santa.style.top = Math.random() * (window.innerHeight * 0.4) + "px";
+    santa.style.fontSize = "40px";
+    santa.style.zIndex = "9999";
+    santa.style.pointerEvents = "none";
+    santa.style.transition = "transform 6s linear";
+
+    document.body.appendChild(santa);
+
+    requestAnimationFrame(() => {
+        santa.style.transform = `translateX(${window.innerWidth + 300}px)`;
+    });
+
+    setTimeout(() => {
+        santa.remove();
+    }, 6500);
+}
+    </script>
+</body>
+</html>
