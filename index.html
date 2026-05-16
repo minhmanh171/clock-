@@ -1277,7 +1277,13 @@
 
         function playAlarmSound() {
             // Create alarm sound using Web Audio API
-            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            let audioContext = null;
+function getAudioContext() {
+    if (!audioContext) {
+        audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    }
+    return audioContext;
+}
             
             function playBeep(freq, startTime, duration) {
                 const oscillator = audioContext.createOscillator();
@@ -1414,11 +1420,19 @@
                     if (particle.x < -20) {
                         particle.x = weatherCanvas.width + 20;
                     }
+weatherCtx.save();
+weatherCtx.translate(particle.x, particle.y);
 
-                    weatherCtx.fillStyle = `rgba(255, 255, 255, ${particle.opacity})`;
-                    weatherCtx.beginPath();
-                    weatherCtx.arc(particle.x, particle.y, particle.radius, 0, Math.PI * 2);
-                    weatherCtx.fill();
+weatherCtx.shadowBlur = 6;
+weatherCtx.shadowColor = "rgba(255,255,255,0.8)";
+
+weatherCtx.fillStyle = `rgba(255, 255, 255, ${particle.opacity})`;
+weatherCtx.font = `${particle.radius * 6}px Arial`;
+weatherCtx.textAlign = "center";
+weatherCtx.textBaseline = "middle";
+
+weatherCtx.fillText("❄", 0, 0);
+weatherCtx.restore();
                 });
             }
         }
@@ -1427,11 +1441,12 @@
             const delta = Math.min((time - weatherLastTime) / 1000, 0.032);
             weatherLastTime = time;
 
-            if (currentWeather === 'none') {
-                weatherCtx.clearRect(0, 0, weatherCanvas.width, weatherCanvas.height);
-                weatherAnimationId = null;
-                return;
-            }
+           if (currentWeather === 'none') {
+    weatherCtx.clearRect(0, 0, weatherCanvas.width, weatherCanvas.height);
+    if (weatherAnimationId) cancelAnimationFrame(weatherAnimationId);
+    weatherAnimationId = null;
+    return;
+}
 
             drawWeather(delta);
             weatherAnimationId = requestAnimationFrame(animateWeather);
@@ -1469,15 +1484,24 @@
 
         window.setWeather = setWeather;
         window.addEventListener('resize', resizeWeatherCanvas);
+        window.addEventListener('load', () => {
+    setSakuraEffect('on');
+});
         resizeWeatherCanvas();
         setWeather('none');
+        document.addEventListener("click", (e) => {
+    if (currentWeather === "snow") {
+        spawnSanta();
+    }
+});
+   
 
         // ==================== SAKURA EFFECT ====================
         const sakuraContainer = document.getElementById('sakura-container');
         const sakuraToggleButton = document.getElementById('sakura-toggle');
         let sakuraParticles = [];
         let sakuraAnimationId = null;
-        let sakuraActive = false;
+        let sakuraActive = true;
         const sakuraMaxCount = 72;
         const sakuraWindSpeed = 20;
 
@@ -1604,6 +1628,30 @@
         if ('Notification' in window && Notification.permission === 'default') {
             Notification.requestPermission();
         }
+
+
+        function spawnSanta() {
+    const santa = document.createElement("div");
+    santa.innerHTML = "🎅🦌🦌🦌";
+    
+    santa.style.position = "fixed";
+    santa.style.left = "-200px";
+    santa.style.top = Math.random() * (window.innerHeight * 0.4) + "px";
+    santa.style.fontSize = "40px";
+    santa.style.zIndex = "9999";
+    santa.style.pointerEvents = "none";
+    santa.style.transition = "transform 6s linear";
+
+    document.body.appendChild(santa);
+
+    requestAnimationFrame(() => {
+        santa.style.transform = `translateX(${window.innerWidth + 300}px)`;
+    });
+
+    setTimeout(() => {
+        santa.remove();
+    }, 6500);
+}
     </script>
 </body>
 </html>
